@@ -229,7 +229,7 @@ type Invoice = {
     };
 };
 type InvoiceInput = {
-    infoTributaria: Omit<TaxInfo, "claveAcceso">;
+    infoTributaria: TaxInfo;
     infoFactura: InvoiceInfo;
     detalles: Details;
     reembolsos?: Reimbursements;

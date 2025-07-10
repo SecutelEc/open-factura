@@ -20,70 +20,21 @@ async function documentAuthorization(accesKey, authorizationUrl) {
 
 // src/services/generateInvoice.ts
 import { create } from "xmlbuilder2";
-
-// src/utils/utils.ts
-function generateAccessKey(accessKeyData) {
-  let accessKey = "";
-  accessKey += formatDateToDDMMYYYY(accessKeyData.date);
-  accessKey += accessKeyData.codDoc;
-  accessKey += accessKeyData.ruc;
-  accessKey += accessKeyData.environment;
-  accessKey += accessKeyData.establishment;
-  accessKey += accessKeyData.emissionPoint;
-  accessKey += accessKeyData.sequential;
-  accessKey += generateRandomEightDigitNumber();
-  accessKey += "1";
-  accessKey += generateVerificatorDigit(accessKey);
-  return accessKey;
-}
-function formatDateToDDMMYYYY(dateStr) {
-  const [day, month, year] = dateStr.split("/");
-  const finalDay = day.padStart(2, "0");
-  const finalMonth = month.padStart(2, "0");
-  return `${finalDay}${finalMonth}${year}`;
-}
-function generateRandomEightDigitNumber() {
-  const min = 1e7;
-  const max = 99999999;
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-function generateVerificatorDigit(accessKey) {
-  let result = 0;
-  let addition = 0;
-  let multiple = 7;
-  for (let i = 0; i < accessKey.length; i++) {
-    addition += parseInt(accessKey.charAt(i)) * multiple;
-    multiple > 2 ? multiple-- : multiple = 7;
-  }
-  result = 11 - addition % 11;
-  result === 10 ? result = 1 : result = result;
-  result === 11 ? result = 0 : result = result;
-  return result;
-}
-
-// src/services/generateInvoice.ts
 function generateInvoiceXml(invoice) {
   const document = create(invoice);
   const xml = document.end({ prettyPrint: true });
   return xml;
 }
 function generateInvoice(invoiceData) {
-  const accessKey = generateAccessKey({
-    date: invoiceData.infoFactura.fechaEmision,
-    codDoc: invoiceData.infoTributaria.codDoc,
-    ruc: invoiceData.infoTributaria.ruc,
-    environment: invoiceData.infoTributaria.ambiente,
-    establishment: invoiceData.infoTributaria.estab,
-    emissionPoint: invoiceData.infoTributaria.ptoEmi,
-    sequential: invoiceData.infoTributaria.secuencial
-  });
+  const accessKey = invoiceData.infoTributaria.claveAcceso;
   const invoice = {
     factura: {
       "@xmlns:ds": "http://www.w3.org/2000/09/xmldsig#",
       "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
       "@id": "comprobante",
       "@version": "1.0.0",
-      infoTributaria: { ...invoiceData.infoTributaria, claveAcceso: accessKey },
+      infoTributaria: invoiceData.infoTributaria,
+      // Se usa tal cual viene
       infoFactura: invoiceData.infoFactura,
       detalles: invoiceData.detalles
     }
